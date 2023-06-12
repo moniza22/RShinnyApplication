@@ -1,0 +1,94 @@
+# LinearRegression Model 
+
+ ```{r, include=FALSE}
+
+ dfRaw <- read_csv("Data/Data - DS C1 Course.csv")
+ dfRaw <- as.data.frame(dfRaw)
+ str_replace(dfRaw$Age, pattern = "Under 17",replacement ="16" )
+ dfRaw$Age <- as.factor(dfRaw$Age)
+
+ dfRaw$Payment <- ifelse(dfRaw$Payment=="Paid", 1,0)
+ dfRaw$Payment[is.na(dfRaw$Payment)] <- 0
+ dfRaw$Payment <- as.factor(dfRaw$Payment)
+ dfRaw$Gender <- as.factor(dfRaw$Gender)
+
+
+
+ ```
+
+
+ ```{r}
+ x_variables <- select(dfRaw,'Payment','Gender','Which Country are you currently residing in?','Latest Degree Completed or in Progress?', `Prior Work Experience in Data Science or Machine Learning`, `Are you currently attending University / College?`)
+ ```
+
+
+
+ Column{.sidebar data-width=200}
+ -------------------------------------------------------------------------------
+
+
+ ```{r inputs}
+ varSelectInput(inputId = "variables", label = "Choose Variables", x_variables, x_variables[1],
+                )
+ ```
+
+ ```{r reactive expression}
+ #model1<- reactive({
+
+   #selectedColumns <- dfRaw %>% select('Age',!!input$variables)
+
+
+
+   #lm(Age~!!input$variables, data = dfRaw)
+
+ #})
+ ```
+
+ Column{}
+ ------------------------------------------------------------------------------
+ ### Linear Regression Summary Output
+
+ ```{r model output}
+
+ renderPrint({
+
+   selectedColumns <- dfRaw %>% select('Age',!!input$variables)
+
+
+   linear <-lm(as.numeric(Age)~. , data = selectedColumns)
+   summary(linear)
+ })
+ ```
+
+ ### Table Actual Age vs Predictor Variable
+ ```{r table}
+ renderTable({
+
+
+   selectedColumns <- dfRaw %>% select('Age',!!input$variables)
+
+    selectedColumns
+
+
+ })
+ ```
+
+ Column{}
+ ------------------------------------------------------------------------------
+ ### Predicted Age vs Actual Age
+ ```{r}
+ renderTable({
+
+   selectedColumns <- dfRaw %>% select('Age',!!input$variables)
+   linear <-lm(as.numeric(Age)~. , data = selectedColumns)
+   y_pred <- predict(linear, selectedColumns, type='response')
+
+   #Age<- selectedColumns %>% group_by(Age)
+    Age <- selectedColumns$Age
+    data.table::data.table(y_pred, Age )         
+
+ })
+
+
+
+ ```
