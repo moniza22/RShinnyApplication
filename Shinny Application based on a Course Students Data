@@ -1,0 +1,67 @@
+title: "moniza_shiny"
+ output: 
+   flexdashboard::flex_dashboard:
+     orientation: columns
+     vertical_layout: fill
+     runtime: shiny
+ ---
+
+
+ ```{r setup, include=FALSE}
+ library(flexdashboard)
+ library(tidyverse)
+ library(shiny)
+ library(dplyr)
+ library(DT)
+ library(plotly)
+ library(shinyWidgets)
+
+
+ ```
+
+
+ ```{r, include=FALSE}
+ dfRaw <- read_csv("Data/Data - DS C1 Course.csv")
+ dfRaw <- as.data.frame(dfRaw)
+ total_count <- dfRaw %>%  count()
+ categorical<-  select(dfRaw,'Gender','Payment','Which Country are you currently residing in?','Latest Degree Completed or in Progress?')
+ class(categorical)
+ categorical
+ numeric <- select(dfRaw,'Age','Student ID')
+
+ class(numeric)
+ ```
+
+
+ # CourseData Application
+
+ Column{.sidebar}
+ ----------------------------------------------------------------------------
+
+ ```{r}
+
+     varSelectInput(inputId="categorical_variable",label="Select Categorical Variable", categorical)
+     varSelectInput(inputId="numeric_variable",label = "Select Numerical Variable", numeric)
+     selectInput(inputId = "color", label = "Select Color Of Your Graph", 
+       choices = c("Light Blue","Light Green","Brown","Grey"), selected = "Light Blue")
+     sliderInput(inputId ="Age", label ="Select Age Range", min=15, max = 50, value = 20)
+
+
+ ```
+
+ Column
+ -----------------------------------------------------------------------------
+
+ ```{r}
+ renderPlot({ggplot(dfRaw,aes(x=!!input$categorical_variable, y=!!input$numeric_variable )) +geom_bar(stat="identity",fill=input$color)
+   })
+
+
+ renderPlot({ggplot(dfRaw,aes(x=!!input$numeric_variable)) +geom_histogram(stat="count",fill=input$color, color="blue")})
+ ```
+
+
+ ```{r}
+ renderTable({dfRaw %>% group_by(!!input$categorical_variable, !!input$numeric_variable) %>% summarize()  %>% count() })
+
+ ```
